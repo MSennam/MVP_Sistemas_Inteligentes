@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Classificador de Vinhos</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header>
+    <h1>Classificador de Vinhos</h1>
+    <p>Esta é uma aplicação que dá uma nota e classificação aos vinhos tendo em vista a sua composição.</p>
+    <p>Preencha os atributos do vinho e clique em "Classificar" para uma análise:</p>
+  </header>
+
+  <!-- Formulário para inserir novo vinho -->
+  <section class="newItem">
+    <input type="text" id="nome" placeholder="Nome do vinho" />
+    <input type="number" step="0.1" id="fix_acid" placeholder="Acidez fixa" />
+    <input type="number" step="0.01" id="vol_acid" placeholder="Acidez volátil" />
+    <input type="number" step="0.01" id="cit_acid" placeholder="Ácido cítrico" />
+    <input type="number" step="0.01" id="res_sugar" placeholder="Açúcar residual" />
+    <input type="number" step="0.001" id="chlorides" placeholder="Cloretos" />
+    <input type="number" step="1" id="free_sulf" placeholder="SO2 livre" />
+    <input type="number" step="1" id="total_sulf" placeholder="SO2 total" />
+    <input type="number" step="0.0001" id="density" placeholder="Densidade" />
+    <input type="number" step="0.01" id="ph" placeholder="pH" />
+    <input type="number" step="0.01" id="sulphates" placeholder="Sulfatos" />
+    <input type="number" step="0.1" id="alcohol" placeholder="Álcool (%)" />
+    <button onclick="classificarVinho()">Classificar</button>
+  </section>
+
+  <!-- Lista de vinhos -->
+  <section class="items">
+    <h2> Vinhos Cadastrados</h2>
+    <table id="vinhoTable">
+      <thead>
+        <tr>
+          <th>Nome</th>
+          <th>Nota Prevista</th>
+          <th>Classificação</th>
+          <th>Ações</th>
+        </tr>
+      </thead>
+      <tbody id="tabelaVinhos"></tbody>
+    </table>
+  </section>
+
+  <script src="scripts.js"></script>
+</body>
+</html>
