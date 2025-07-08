@@ -2,7 +2,7 @@ import os
 import logging
 from logging.config import dictConfig
 
-# Criação do diretório de logs caso não exista
+# Criação do diretório de logs caso não exista nenhum
 log_path = "log/"
 if not os.path.exists(log_path):
     os.makedirs(log_path)

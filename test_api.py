@@ -99,7 +99,7 @@ def test_delete_vinho_inexistente(client):
     data = json.loads(response.data)
     assert "message" in data
 
-# Teste de extremos (opcional)
+# Teste de extremos (opcional) - 
 def test_predicao_extremos(client):
     extremos = [
         {
