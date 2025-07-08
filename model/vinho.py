@@ -1,9 +1,7 @@
 from sqlalchemy import Column, String, Integer, DateTime, Float
-from sqlalchemy.orm import relationship
 from datetime import datetime
 from typing import Union
-
-from model import Base
+from model.base import Base
 
 
 class Vinho(Base):
@@ -24,7 +22,7 @@ class Vinho(Base):
     alcohol = Column("Alcohol", Float)
     quality_pred = Column("QualityPrediction", Integer)
     class_label = Column("Classificacao", String(20))
-    data_insercao = Column(DateTime, default=datetime.now())
+    data_insercao = Column(DateTime, default=datetime.now)
 
     def __init__(
         self, nome: str, fix_acid: float, vol_acid: float, cit_acid: float,

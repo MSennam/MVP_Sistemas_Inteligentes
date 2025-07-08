@@ -1,8 +1,9 @@
 from flask_openapi3 import OpenAPI, Info, Tag
-from flask import redirect
+from flask import redirect, request # Import 'request' from Flask
 from urllib.parse import unquote
 from flask_cors import CORS
 from sqlalchemy.exc import IntegrityError
+from pydantic import ValidationError
 
 from model import *
 from logger import logger
@@ -10,8 +11,11 @@ from schemas import *
 
 # API metadata
 info = Info(title="API Classificação de Vinhos", version="1.0.0")
+
+# Configuração da aplicação
 app = OpenAPI(__name__, info=info, static_folder="front",
               static_url_path="/front")
+
 CORS(app)
 
 # Tags
@@ -20,8 +24,6 @@ home_tag = Tag(name="Documentação",
 vinho_tag = Tag(name="Vinho", description="Predição e gestão de vinhos")
 
 # Rota inicial
-
-
 @app.get("/", tags=[home_tag])
 def home():
     """Redireciona para a interface frontend."""
@@ -46,22 +48,29 @@ def get_vinhos():
         return apresenta_vinhos(vinhos), 200
 
 
-@app.post("/vinho", tags=[vinho_tag], responses={"200": VinhoViewSchema, "400": ErrorSchema, "409": ErrorSchema})
-def predict(form: VinhoSchema):
-    """Realiza a predição da qualidade do vinho e salva na base."""
 
-    # Instancia classes
+@app.post("/vinho", tags=[vinho_tag], responses={"200": VinhoViewSchema, "400": ErrorSchema, "409": ErrorSchema})
+def predict(): 
+    
+    # 1. Pega os dados JSON brutos diretamente da requisição
+    data = request.get_json()
+    logger.info(f"Dados recebidos pela API: {data}")
+
+    # 2. Tenta criar o objeto Pydantic manualmente a partir dos dados brutos
+    try:
+        form = VinhoSchema(**data)
+    except ValidationError as e:
+        logger.error(f"Erro de validação do Pydantic: {e}")
+        return {"message": "Dados de entrada inválidos.", "errors": e.errors()}, 400
+
+    
+    
     preprocessador = PreProcessador()
     pipeline_loader = Pipeline()
-
-    # Prepara entrada
     X_input = preprocessador.preparar_form(form)
-
-    # Carrega modelo
     modelo = pipeline_loader.carrega_pipeline(
         "pipelines/et_wine_classifier_pipeline.pkl")
 
-    # Predição
     quality = int(modelo.predict(X_input)[0])
     if quality <= 3:
         label = "ruim"
@@ -91,14 +100,11 @@ def predict(form: VinhoSchema):
 
     try:
         session = Session()
-
         if session.query(Vinho).filter(Vinho.nome == vinho.nome).first():
             return {"message": "Vinho já registrado."}, 409
-
         session.add(vinho)
         session.commit()
         return apresenta_vinho(vinho), 200
-
     except Exception as e:
         logger.warning(f"Erro ao adicionar vinho: {e}")
         return {"message": "Erro ao processar o vinho."}, 400
@@ -113,10 +119,8 @@ def get_vinho(query: VinhoBuscaSchema):
     """Busca um vinho cadastrado na base pelo nome."""
     vinho_nome = unquote(query.nome)
     logger.debug(f"Buscando vinho '{vinho_nome}'")
-
     session = Session()
     vinho = session.query(Vinho).filter(Vinho.nome == vinho_nome).first()
-
     if not vinho:
         error_msg = f"Vinho '{vinho_nome}' não encontrado."
         logger.warning(error_msg)
@@ -128,16 +132,14 @@ def get_vinho(query: VinhoBuscaSchema):
 @app.delete(
     "/vinho",
     tags=[vinho_tag],
-    responses={"200": VinhoViewSchema, "404": ErrorSchema},
+    responses={"200": {"description": "Mensagem de sucesso"}, "404": ErrorSchema},
 )
 def delete_vinho(query: VinhoBuscaSchema):
     """Remove um vinho cadastrado na base pelo nome."""
     vinho_nome = unquote(query.nome)
     logger.debug(f"Deletando vinho '{vinho_nome}'")
-
     session = Session()
     vinho = session.query(Vinho).filter(Vinho.nome == vinho_nome).first()
-
     if not vinho:
         error_msg = f"Vinho '{vinho_nome}' não encontrado."
         logger.warning(error_msg)
